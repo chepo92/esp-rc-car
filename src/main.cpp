@@ -35,6 +35,13 @@ const char* allowedRoles[] = {
 };
 
 
+const unsigned long HEARTBEAT_INTERVAL_MS = 1000;
+const unsigned long CLIENT_TIMEOUT_MS = 5000;
+
+unsigned long lastHeartbeatMs[MAX_WS_CLIENTS] = {0};
+bool roleTimedOut[MAX_WS_CLIENTS] = {false};
+
+
 // ============================================================
 // Movement commands received from the WebSocket client
 // ============================================================
@@ -213,13 +220,24 @@ void driveMecanum(int forward, int strafe, int rotate)
     );
 }
 
+void setMotor1(int speed);
+void setMotor2(int speed);
+void setMotor3(int speed);
+
 void stopAll()
 {
+    // Detener las cuatro ruedas
     setFL(0);
     setFR(0);
     setRL(0);
     setRR(0);
+
+    // Detener los motores auxiliares
+    setMotor1(0);
+    setMotor2(0);
+    setMotor3(0);
 }
+
 
 // ====== TEST POR MOTOR ======
 void testMotor(const char* name, void (*motorFn)(int))
@@ -359,6 +377,7 @@ void stopRole(const String& role) {
     // El servo conserva su última posición.
 }
 
+
 bool roleIsTaken(const String& role, int exceptSlot = -1) {
     for (uint8_t i = 0; i < MAX_WS_CLIENTS; i++) {
         if (i != exceptSlot &&
@@ -378,6 +397,17 @@ bool roleIsTaken(const String& role, int exceptSlot = -1) {
 // ============================================================
 void handleClientMessage(uint8_t slot, WebsocketsMessage msg) {
     String data = msg.data();
+
+    // Heartbeat: responder incluso si el cliente aún no tiene rol.
+    if (data == "PING") {
+        if (!clientRole[slot].isEmpty()) {
+            lastHeartbeatMs[slot] = millis();
+            roleTimedOut[slot] = false;
+        }
+
+        clients[slot].send("PONG");
+        return;
+    }
 
     // Exigir asignación de rol antes de aceptar comandos.
     if (clientRole[slot].isEmpty()) {
@@ -400,6 +430,9 @@ void handleClientMessage(uint8_t slot, WebsocketsMessage msg) {
             return;
         }
 
+        lastHeartbeatMs[slot] = millis();
+        roleTimedOut[slot] = false;
+
         clientRole[slot] = role;
         clients[slot].send("ROLE_OK," + role);
 
@@ -407,6 +440,11 @@ void handleClientMessage(uint8_t slot, WebsocketsMessage msg) {
                       slot, role.c_str());
         return;
     }
+
+    if (roleTimedOut[slot]) {
+        clients[slot].send("ROLE_TIMEOUT");
+        return;
+    }    
 
     // Conductor: DRIVE,adelante,lateral,giro
     if (clientRole[slot] == "conductor") {
@@ -427,6 +465,8 @@ void handleClientMessage(uint8_t slot, WebsocketsMessage msg) {
             constrain(strafe, -100, 100),
             constrain(rotate, -100, 100)
         );
+        lastHeartbeatMs[slot] = millis();
+         
     }
 
     // Servo: SERVO,posicion
@@ -435,6 +475,9 @@ void handleClientMessage(uint8_t slot, WebsocketsMessage msg) {
 
         int position = data.substring(6).toInt();
         setServoPosition(constrain(position, 0, 180));
+        lastHeartbeatMs[slot] = millis();
+         
+
     }
 
     // Auxiliar: AUX,motor,velocidad
@@ -454,6 +497,8 @@ void handleClientMessage(uint8_t slot, WebsocketsMessage msg) {
             case 3: setMotor3(speed); break;
             default: return;
         }
+        lastHeartbeatMs[slot] = millis();
+         
     }
 }
 
@@ -517,6 +562,33 @@ void serviceWebSocketClients() {
         }
     }
 }
+
+void checkClientTimeouts() {
+    const unsigned long now = millis();
+
+    for (uint8_t slot = 0; slot < MAX_WS_CLIENTS; slot++) {
+        if (clientRole[slot].isEmpty() || roleTimedOut[slot]) {
+            continue;
+        }
+
+        if (now - lastHeartbeatMs[slot] >= CLIENT_TIMEOUT_MS) {
+            const String role = clientRole[slot];
+
+            // Detener únicamente los actuadores de este rol.
+            stopRole(role);
+
+            roleTimedOut[slot] = true;
+
+            clients[slot].send("ROLE_TIMEOUT");
+
+            Serial.printf(
+                "SAFETY: Timeout cliente %u, rol %s\n",
+                slot, role.c_str()
+            );
+        }
+    }
+}
+
 
 void setup()
 {
@@ -634,7 +706,7 @@ void setup()
     Serial.println(ssid);
 
     // Seleccion de roles
-webserver.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
+    webserver.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
     if (request->hasParam("role")) {
         String role = request->getParam("role")->value();
 
@@ -680,6 +752,7 @@ void loop()
 
     acceptWebSocketClients();
     serviceWebSocketClients();
+    checkCommandTimeouts();
 
     yield();
 }

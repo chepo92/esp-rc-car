@@ -104,6 +104,10 @@ function connectWebSocket() {
         const message = String(event.data).trim();
         console.log("[WS] Received:", message);
         showAppAlert("Msg from ESP32", message);
+        
+        if (message === "PONG") {
+        return;
+        }
 
         if (message === "ROLE_OK," + role) {
             clearTimeout(roleTimeout);
@@ -451,6 +455,8 @@ setInterval(() => {
             }
         }
     }
+
+    send(packet);
 }, 50);
  
 
@@ -611,6 +617,7 @@ document.addEventListener("fullscreenchange", () => {
  // =====================================================
  // WEBSOCKET EVENTS
  // =====================================================
+let heartbeatTimer = null;
 
 ws.onopen = () => {
   console.log("[WS] Connected:", WS_URL);
@@ -624,6 +631,7 @@ ws.onopen = () => {
     console.log("[WS] Role requested:", role);
   }
 
+  // Timeout para la autorización del rol
   clearTimeout(roleTimeout);
   roleTimeout = setTimeout(() => {
     if (!roleGranted) {
@@ -636,7 +644,18 @@ ws.onopen = () => {
       );
     }
   }, 5000);
+
+  // Heartbeat periódico
+  clearInterval(heartbeatTimer);
+  heartbeatTimer = setInterval(() => {
+    if (ws.readyState === WebSocket.OPEN) {
+      ws.send("PING");
+    }
+  }, 1000);
+
+  console.log("[WS] Heartbeat iniciado (1000 ms)");
 };
+
 
 ws.onerror = (event) => {
   console.error("[WS] Connection error:", WS_URL, event);
@@ -649,10 +668,14 @@ ws.onerror = (event) => {
   );
 };
 
+
+
 ws.onclose = (event) => {
   console.warn("[WS] Connection closed:", event.code, event.reason);
 
   clearTimeout(roleTimeout);
+  clearInterval(heartbeatTimer);
+  heartbeatTimer = null;
   roleGranted = false;
   enabled = false;
 
@@ -781,3 +804,10 @@ function refreshEnableButton() {
   const button = document.getElementById("enableBtn");
   button.textContent = enabled ? "DISABLE" : "ENABLE";
 }
+
+
+setInterval(() => {
+    if (ws?.readyState === WebSocket.OPEN && roleGranted) {
+        ws.send(`HEARTBEAT,${role}`);
+    }
+}, 250);
