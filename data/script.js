@@ -271,17 +271,15 @@ document
 
 let lastPacket = "";
 
-setInterval(() =>
-{
+setInterval(() => {
     const packet = getControlData();
 
-    if (packet !== lastPacket)
-    {
+    if (packet !== lastPacket) {
         console.log(packet);
-        send(packet);
-
         lastPacket = packet;
     }
+
+    send(packet);
 }, 50);
 
 
@@ -324,16 +322,19 @@ document
 };
 
 
-document
-.getElementById("stopBtn")
-.onclick = () =>
-{
+document.getElementById("stopBtn").onclick = () => {
     enabled = false;
 
-    servoLeftPos = 90;
-    servoRightPos = 90;
+    // Detener los tres motores auxiliares
+    auxMotor1 = 0;
+    auxMotor2 = 0;
+    auxMotor3 = 0;
+
+    updateEnableButton();
+
     console.log("[UI] Stop button");
-    send("0,0,0,90,90");
+
+    send(getControlData());
 };
 
 // =====================================================

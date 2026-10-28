@@ -20,7 +20,9 @@ WebsocketsServer server;
 AsyncWebServer webserver(80);
 
 WebsocketsClient client;
-
+unsigned long lastCommandMs = 0;
+bool hasReceivedCommand = false;
+const unsigned long COMMAND_TIMEOUT_MS = 500;
 
 // ============================================================
 // Movement commands received from the WebSocket client
@@ -200,13 +202,24 @@ void driveMecanum(int forward, int strafe, int rotate)
     );
 }
 
+void setMotor1(int speed);
+void setMotor2(int speed);
+void setMotor3(int speed);
+
 void stopAll()
 {
+    // Detener las cuatro ruedas
     setFL(0);
     setFR(0);
     setRL(0);
     setRR(0);
+
+    // Detener los motores auxiliares
+    setMotor1(0);
+    setMotor2(0);
+    setMotor3(0);
 }
+
 
 // ====== TEST POR MOTOR ======
 void testMotor(const char* name, void (*motorFn)(int))
@@ -538,6 +551,8 @@ void handle_message(WebsocketsMessage msg)
         motor1, motor2, motor3,
         servoPosition
     );
+    lastCommandMs = millis();
+hasReceivedCommand = true;
 }
 
 
@@ -561,7 +576,15 @@ void loop()
     {
         client.poll();
     }
-
+// Seguridad ante perdida de comunicacion
+if (hasReceivedCommand &&
+    (!client.available() ||
+     millis() - lastCommandMs > COMMAND_TIMEOUT_MS))
+{
+    stopAll();
+    hasReceivedCommand = false;
+    Serial.println("SAFETY: Communication timeout");
+}
     yield();
 }
 
