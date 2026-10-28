@@ -103,11 +103,12 @@ function connectWebSocket() {
     ws.onmessage = event => {
         const message = String(event.data).trim();
         console.log("[WS] Received:", message);
-        showAppAlert("Msg from ESP32", message);
         
         if (message === "PONG") {
         return;
         }
+
+        showAppAlert("Msg from ESP32", message);
 
         if (message === "ROLE_OK," + role) {
             clearTimeout(roleTimeout);
