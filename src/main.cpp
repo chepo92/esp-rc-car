@@ -156,13 +156,13 @@ void setMotorTA6586(
 void setFL(int v)
 {
     if (invertFL) v = -v;
-    setMotor(pwm_FL, dir_FL, v);
+    setMotorTA6586(pwm_FL, dir_FL, v);
 }
 
 void setFR(int v)
 {
     if (invertFR) v = -v;
-    setMotor(pwm_FR, dir_FR, v);
+    setMotorTA6586(pwm_FR, dir_FR, v);
 }
 
 void setRL(int v)
