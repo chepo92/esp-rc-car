@@ -107,7 +107,7 @@ int motor3 = 0;  // Auxiliary motor 3 command
 
 
 
-void setMotor(int pwmPin, int dirPin, int value)
+void setMotorPwmDir(int pwmPin, int dirPin, int value)
 {
     value = constrain(value, -255, 255);
 
