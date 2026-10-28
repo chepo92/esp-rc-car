@@ -633,11 +633,24 @@ void setup()
     Serial.print("OTA Hostname: ");
     Serial.println(ssid);
 
-    // Serve all files from root
-    webserver.serveStatic("/", LittleFS, "/");
-    webserver.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
-        request->send(LittleFS, "/index.html", "text/html");
-    });  
+    // Seleccion de roles
+webserver.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
+    if (request->hasParam("role")) {
+        String role = request->getParam("role")->value();
+
+        if (role == "conductor" ||
+            role == "auxiliar" ||
+            role == "servo") {
+            request->send(LittleFS, "/index.html", "text/html");
+            return;
+        }
+    }
+
+    request->send(LittleFS, "/landing.html", "text/html");
+});
+
+// Servir los demas archivos
+webserver.serveStatic("/", LittleFS, "/");
 
     // start server
     webserver.begin();

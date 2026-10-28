@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#11161b">
+  <title>Omnibot · Seleccionar rol</title>
+  <style>
+    :root { color-scheme: dark; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
+    * { box-sizing: border-box; }
+    body { min-height: 100vh; margin: 0; color: #f7fbfd; background: radial-gradient(ellipse at 50% 0, #263640 0, #11171c 55%, #0b1116 100%); }
+    main { max-width: 650px; margin: auto; padding: 36px 20px 48px; }
+    .eyebrow { color: #77dfbc; font-size: .74rem; letter-spacing: .21em; font-weight: 750; text-transform: uppercase; }
+    header { margin: 14px 0 30px; text-align: center; }
+    .logo { display: grid; place-items: center; width: 70px; height: 70px; margin: 0 auto 15px; border-radius: 21px; background: #203b38; border: 1px solid #385f56; font-size: 35px; }
+    h1 { font-size: clamp(2.2rem, 7vw, 3.1rem); letter-spacing: -.05em; margin: 0; }
+    .subtitle { margin: 10px 0 0; color: #a7b4bd; line-height: 1.5; }
+    .card { display: block; position: relative; text-decoration: none; color: inherit; border: 1px solid #38464c; border-radius: 19px; padding: 22px; background: #1b242b; transition: border-color .15s, background .15s, transform .15s; }
+    .card:hover, .card:focus-visible { border-color: #74d9ba; background: #223038; transform: translateY(-2px); outline: none; }
+    .primary { padding: 24px; border-color: #3a826f; background: linear-gradient(120deg, #173a36, #1e3334); }
+    .card-title { display: flex; align-items: center; gap: 10px; margin: 0 0 8px; font-size: 1.35rem; font-weight: 750; }
+    .card p { color: #b3c0c7; line-height: 1.45; margin: 0 0 19px; font-size: .93rem; }
+    .pill { display: inline-block; padding: 6px 10px; background: #2b5b4d; color: #baf8e0; border-radius: 99px; font-size: .72rem; font-weight: 750; margin: 0 0 16px; }
+    .cta { display: flex; align-items: center; justify-content: space-between; gap: 12px; border-radius: 11px; background: #41cc9a; color: #062c23; padding: 12px 14px; font-size: .95rem; font-weight: 800; }
+    .secondary-cta { background: #313f48; color: #edf7fa; padding: 11px 13px; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px; }
+    footer { color: #8a9aa4; font-size: .78rem; text-align: center; margin-top: 24px; }
+    @media (max-width: 470px) { main { padding: 25px 14px; } .grid { grid-template-columns: 1fr; } .primary { padding: 20px; } }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div class="logo" aria-hidden="true">🤖</div>
+      <div class="eyebrow">Control remoto</div>
+      <h1>OMNIBOT</h1>
+      <p class="subtitle">Selecciona qué parte del robot vas a controlar.</p>
+    </header>
+
+    <a class="card primary" href="/?role=conductor" aria-label="Entrar como conductor">
+      <span class="pill">ROL PRINCIPAL</span>
+      <h2 class="card-title">🎮 Conductor</h2>
+      <p>Control de ruedas, desplazamiento y giro con los dos joysticks.</p>
+      <span class="cta">Entrar como conductor <span aria-hidden="true">→</span></span>
+    </a>
+
+    <div class="grid">
+      <a class="card" href="/?role=auxiliar" aria-label="Entrar al control de auxiliares">
+        <h2 class="card-title">⚙️ Auxiliares</h2>
+        <p>Control independiente de los motores auxiliares.</p>
+        <span class="cta secondary-cta">Seleccionar <span aria-hidden="true">→</span></span>
+      </a>
+      <a class="card" href="/?role=servo" aria-label="Entrar al control del servo">
+        <h2 class="card-title">🎚️ Servo</h2>
+        <p>Ajuste de la posición del servomotor.</p>
+        <span class="cta secondary-cta">Seleccionar <span aria-hidden="true">→</span></span>
+      </a>
+    </div>
+    <footer>Conéctate a la red Wi-Fi del robot para usar los controles.</footer>
+  </main>
+</body>
+</html>
