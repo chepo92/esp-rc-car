@@ -28,6 +28,9 @@ WebsocketsClient clients[MAX_WS_CLIENTS];
 bool clientConnected[MAX_WS_CLIENTS] = { false };
 String clientRole[MAX_WS_CLIENTS] = { "", "", "" };
 
+// Slot del cliente que inició la prueba.
+int8_t motorTestOwnerSlot = -1;
+
 const char* allowedRoles[] = {
     "drive",
     "servo",
@@ -70,8 +73,6 @@ const bool invertFL = false;  // Reverse front-left motor direction
 const bool invertFR = true;   // Reverse front-right motor direction
 const bool invertRL = false;  // Reverse rear-left motor direction
 const bool invertRR = false;  // Reverse rear-right motor direction
-
-bool motorTestMode = false;   // Enable individual motor testing mode
 
 
 // ============================================================
@@ -273,6 +274,115 @@ void testMotor(const char* name, void (*motorFn)(int))
 }
 
 
+// ====== TEST NO BLOQUEANTE POR MOTOR ======
+
+using MotorFn = void (*)(int);
+
+MotorFn testMotors[] = { setFL, setFR, setRL, setRR };
+const char* testMotorNames[] = { "FL", "FR", "RL", "RR" };
+const uint8_t TEST_MOTOR_COUNT = 4;
+
+bool motorTestActive = false;
+uint8_t testMotorIndex = 0;
+uint8_t testPhase = 0; // 0 = adelante, 1 = atrás, 2 = pausa
+unsigned long testPhaseStart = 0;
+
+bool startMotorTest(uint8_t ownerSlot)
+{
+    if (motorTestActive)
+        return false;
+
+    stopAll();
+
+    motorTestOwnerSlot = ownerSlot;
+    motorTestActive = true;
+    testMotorIndex = 0;
+    testPhase = 0;
+    testPhaseStart = millis();
+
+    Serial.println("\n===== MOTOR TEST START =====");
+    Serial.printf("=== TEST %s FORWARD ===\n",
+                  testMotorNames[testMotorIndex]);
+
+    testMotors[testMotorIndex](150);
+    return true;
+}
+
+void updateMotorTest()
+{
+    if (!motorTestActive)
+        return;
+
+    const unsigned long now = millis();
+
+    if (testPhase == 0 && now - testPhaseStart >= 2000) {
+        testPhase = 1;
+        testPhaseStart = now;
+
+        Serial.printf("=== TEST %s BACKWARD ===\n",
+                      testMotorNames[testMotorIndex]);
+
+        testMotors[testMotorIndex](-150);
+    }
+    else if (testPhase == 1 && now - testPhaseStart >= 2000) {
+        stopAll();
+        testPhase = 2;
+        testPhaseStart = now;
+    }
+    else if (testPhase == 2 && now - testPhaseStart >= 1000) {
+        testMotorIndex++;
+
+        if (testMotorIndex >= TEST_MOTOR_COUNT) {
+            stopAll();
+            motorTestActive = false;
+
+            // Notificar al cliente que inició el test, si sigue conectado.
+            if (motorTestOwnerSlot >= 0 &&
+                motorTestOwnerSlot < MAX_WS_CLIENTS &&
+                clientConnected[motorTestOwnerSlot] &&
+                clients[motorTestOwnerSlot].available()) {
+                clients[motorTestOwnerSlot].send("TEST_DONE");
+            }
+
+            motorTestOwnerSlot = -1;
+
+            Serial.println("===== MOTOR TEST END =====\n");
+            return;
+        }
+
+        testPhase = 0;
+        testPhaseStart = now;
+
+        Serial.printf("=== TEST %s FORWARD ===\n",
+                      testMotorNames[testMotorIndex]);
+
+        testMotors[testMotorIndex](150);
+    }
+}
+
+void cancelMotorTest()
+{
+    if (!motorTestActive)
+        return;
+
+    const int8_t owner = motorTestOwnerSlot;
+
+    // Detener primero los motores.
+    motorTestActive = false;
+    stopAll();
+
+    // Avisar al cliente, si todavía está conectado.
+    if (owner >= 0 &&
+        owner < MAX_WS_CLIENTS &&
+        clientConnected[owner]) {
+        clients[owner].send("TEST_STOPPED");
+    }
+
+    motorTestOwnerSlot = -1;
+
+    Serial.println("===== MOTOR TEST CANCELLED =====");
+}
+
 // ============================================================
 // Bidirectional auxiliary DC motor control
 // ============================================================
@@ -392,6 +502,9 @@ void stopRole(const String& role) {
         setMotor2(0);
         setMotor3(0);
     }
+    else if (role == "maintenance") {
+        cancelMotorTest();
+    }
     // El servo conserva su última posición.
 }
 
@@ -427,6 +540,35 @@ void handleClientMessage(uint8_t slot, WebsocketsMessage msg) {
         return;
     }
 
+    // Iniciar prueba de motores desde el landing web.
+    if (data == "TEST_MOTORS") {
+        if (clientRole[slot] != "conductor") {
+            clients[slot].send("TEST_DENIED");
+            return;
+        }
+
+        if (motorTestActive) {
+            clients[slot].send("TEST_BUSY");
+            return;
+        }
+
+        startMotorTest();
+        clients[slot].send("TEST_STARTED");
+        return;
+    }
+
+    // Cancelar prueba desde el landing web.
+    if (data == "STOP_MOTOR_TEST") {
+        if (clientRole[slot] != "conductor") {
+            clients[slot].send("TEST_DENIED");
+            return;
+        }
+
+        cancelMotorTest();
+        clients[slot].send("TEST_STOPPED");
+        return;
+    }
+
     // Exigir asignación de rol antes de aceptar comandos.
     if (clientRole[slot].isEmpty()) {
         if (!data.startsWith("ROLE,")) {
@@ -438,12 +580,15 @@ void handleClientMessage(uint8_t slot, WebsocketsMessage msg) {
 
         if (role != "conductor" &&
             role != "servo" &&
-            role != "auxiliar") {
+            role != "auxiliar" &&
+            role != "maintenance") {
             clients[slot].send("ROLE_DENIED");
             return;
         }
 
-        if (roleIsTaken(role, slot)) {
+        // Maintenance es independiente del rol conductor.
+        // El propio motorTestActive impide ejecutar dos tests a la vez.
+        if (role != "maintenance" && roleIsTaken(role, slot)) {
             clients[slot].send("ROLE_BUSY");
             return;
         }
@@ -464,9 +609,44 @@ void handleClientMessage(uint8_t slot, WebsocketsMessage msg) {
         return;
     }    
 
+    // ====== COMANDOS DE MANTENIMIENTO ======
+    if (clientRole[slot] == "maintenance") {
+
+        if (data == "TEST_MOTORS") {
+            if (motorTestActive) {
+                clients[slot].send("TEST_BUSY");
+                return;
+            }
+
+            if (startMotorTest(slot)) {
+                clients[slot].send("TEST_STARTED");
+            } else {
+                clients[slot].send("TEST_BUSY");
+            }
+
+            return;
+        }
+
+        if (data == "STOP_MOTOR_TEST") {
+            // Solo quien inició la prueba puede detenerla.
+            if (motorTestActive && motorTestOwnerSlot == slot) {
+                cancelMotorTest();
+                clients[slot].send("TEST_STOPPED");
+            } else {
+                clients[slot].send("TEST_DENIED");
+            }
+
+            return;
+        }
+
+        // El rol maintenance no puede enviar otros comandos.
+        return;
+    }
+    
     // Conductor: DRIVE,adelante,lateral,giro
     if (clientRole[slot] == "conductor") {
         if (!data.startsWith("DRIVE,")) return;
+        if (motorTestActive) return;
 
         int p1 = data.indexOf(',');
         int p2 = data.indexOf(',', p1 + 1);
@@ -571,7 +751,7 @@ void serviceWebSocketClients() {
 
             Serial.printf("WS: desconectado slot %d, rol %s\n",
                           i, role.c_str());
-
+                          
             // Detener el subsistema antes de liberar el slot.
             stopRole(role);
 
@@ -750,16 +930,6 @@ void setup()
     Serial.print("Server status: ");
     Serial.println(server.available());
 
-    if (motorTestMode)
-    {
-    delay(2000);   // tiempo para abrir serial monitor
-    Serial.println("\n===== MOTOR TEST START =====");
-    testMotor("FL", setFL);
-    testMotor("FR", setFR);
-    testMotor("RL", setRL);
-    testMotor("RR", setRR);
-    Serial.println("===== MOTOR TEST END =====\n");
-    }
  
 }
 
@@ -771,6 +941,7 @@ void loop()
     acceptWebSocketClients();
     serviceWebSocketClients();
     checkClientTimeouts();
+    updateMotorTest();
 
     yield();
 }

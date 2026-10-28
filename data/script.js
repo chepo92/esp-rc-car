@@ -110,6 +110,31 @@ function connectWebSocket() {
 
         showAppAlert("Msg from ESP32", message);
 
+        // Test motores 
+        if (message === "TEST_STARTED") {
+            document.getElementById("motorTestStatus").textContent =
+                "Prueba en ejecución";
+            return;
+        }
+
+        if (message === "TEST_BUSY") {
+            document.getElementById("motorTestStatus").textContent =
+                "La prueba ya está en ejecución";
+            return;
+        }
+
+        if (message === "TEST_STOPPED") {
+            document.getElementById("motorTestStatus").textContent =
+                "Prueba detenida";
+            return;
+        }
+
+        if (message === "TEST_DENIED") {
+            showAppAlert("Sin autorización", "No tienes permiso para probar los motores.");
+            return;
+        }
+
+
         if (message === "ROLE_OK," + role) {
             clearTimeout(roleTimeout);
             roleGranted = true;
@@ -490,6 +515,28 @@ function stopCurrentRole() {
 
     // El servo mantiene su última posición.
 }
+
+// Motor Test
+
+document.getElementById("startMotorTest").addEventListener("click", () => {
+    if (!ws || ws.readyState !== WebSocket.OPEN) {
+        showAppAlert("Sin conexión", "No hay conexión WebSocket con el ESP32.");
+        return;
+    }
+
+    if (!roleGranted || role !== "conductor") {
+        showAppAlert("Sin autorización", "Debes tener asignado el rol conductor.");
+        return;
+    }
+
+    ws.send("TEST_MOTORS");
+});
+
+document.getElementById("stopMotorTest").addEventListener("click", () => {
+    if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send("STOP_MOTOR_TEST");
+    }
+});
 
 /* =====================================================
    BUTTONS: ENABLE / STOP / CONFIG

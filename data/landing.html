@@ -1,62 +1,484 @@
+```html
 <!doctype html>
 <html lang="es">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#11161b">
-  <title>Omnibot · Seleccionar rol</title>
+  <title>Omnibot · Inicio</title>
+
   <style>
-    :root { color-scheme: dark; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
+    :root {
+      color-scheme: dark;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    }
+
     * { box-sizing: border-box; }
-    body { min-height: 100vh; margin: 0; color: #f7fbfd; background: radial-gradient(ellipse at 50% 0, #263640 0, #11171c 55%, #0b1116 100%); }
-    main { max-width: 650px; margin: auto; padding: 36px 20px 48px; }
-    .eyebrow { color: #77dfbc; font-size: .74rem; letter-spacing: .21em; font-weight: 750; text-transform: uppercase; }
-    header { margin: 14px 0 30px; text-align: center; }
-    .logo { display: grid; place-items: center; width: 70px; height: 70px; margin: 0 auto 15px; border-radius: 21px; background: #203b38; border: 1px solid #385f56; font-size: 35px; }
-    h1 { font-size: clamp(2.2rem, 7vw, 3.1rem); letter-spacing: -.05em; margin: 0; }
-    .subtitle { margin: 10px 0 0; color: #a7b4bd; line-height: 1.5; }
-    .card { display: block; position: relative; text-decoration: none; color: inherit; border: 1px solid #38464c; border-radius: 19px; padding: 22px; background: #1b242b; transition: border-color .15s, background .15s, transform .15s; }
-    .card:hover, .card:focus-visible { border-color: #74d9ba; background: #223038; transform: translateY(-2px); outline: none; }
-    .primary { padding: 24px; border-color: #3a826f; background: linear-gradient(120deg, #173a36, #1e3334); }
-    .card-title { display: flex; align-items: center; gap: 10px; margin: 0 0 8px; font-size: 1.35rem; font-weight: 750; }
-    .card p { color: #b3c0c7; line-height: 1.45; margin: 0 0 19px; font-size: .93rem; }
-    .pill { display: inline-block; padding: 6px 10px; background: #2b5b4d; color: #baf8e0; border-radius: 99px; font-size: .72rem; font-weight: 750; margin: 0 0 16px; }
-    .cta { display: flex; align-items: center; justify-content: space-between; gap: 12px; border-radius: 11px; background: #41cc9a; color: #062c23; padding: 12px 14px; font-size: .95rem; font-weight: 800; }
-    .secondary-cta { background: #313f48; color: #edf7fa; padding: 11px 13px; }
-    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px; }
-    footer { color: #8a9aa4; font-size: .78rem; text-align: center; margin-top: 24px; }
-    @media (max-width: 470px) { main { padding: 25px 14px; } .grid { grid-template-columns: 1fr; } .primary { padding: 20px; } }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      color: #f7fbfd;
+      background: radial-gradient(
+        ellipse at 50% 0,
+        #263640 0,
+        #11171c 55%,
+        #0b1116 100%
+      );
+    }
+
+    main {
+      max-width: 650px;
+      margin: auto;
+      padding: 36px 20px 48px;
+    }
+
+    .eyebrow {
+      color: #77dfbc;
+      font-size: .74rem;
+      letter-spacing: .21em;
+      font-weight: 750;
+      text-transform: uppercase;
+    }
+
+    header {
+      margin: 14px 0 30px;
+      text-align: center;
+    }
+
+    .logo {
+      display: grid;
+      place-items: center;
+      width: 70px;
+      height: 70px;
+      margin: 0 auto 15px;
+      border-radius: 21px;
+      background: #203b38;
+      border: 1px solid #385f56;
+      font-size: 35px;
+    }
+
+    h1 {
+      font-size: clamp(2.2rem, 7vw, 3.1rem);
+      letter-spacing: -.05em;
+      margin: 0;
+    }
+
+    .subtitle {
+      margin: 10px 0 0;
+      color: #a7b4bd;
+      line-height: 1.5;
+    }
+
+    .card {
+      display: block;
+      position: relative;
+      text-decoration: none;
+      color: inherit;
+      border: 1px solid #38464c;
+      border-radius: 19px;
+      padding: 22px;
+      background: #1b242b;
+      transition: border-color .15s, background .15s, transform .15s;
+    }
+
+    .card:hover,
+    .card:focus-visible {
+      border-color: #74d9ba;
+      background: #223038;
+      transform: translateY(-2px);
+      outline: none;
+    }
+
+    .primary {
+      padding: 24px;
+      border-color: #3a826f;
+      background: linear-gradient(120deg, #173a36, #1e3334);
+    }
+
+    .card-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 0 0 8px;
+      font-size: 1.35rem;
+      font-weight: 750;
+    }
+
+    .card p {
+      color: #b3c0c7;
+      line-height: 1.45;
+      margin: 0 0 19px;
+      font-size: .93rem;
+    }
+
+    .pill {
+      display: inline-block;
+      padding: 6px 10px;
+      background: #2b5b4d;
+      color: #baf8e0;
+      border-radius: 99px;
+      font-size: .72rem;
+      font-weight: 750;
+      margin: 0 0 16px;
+    }
+
+    .cta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      border-radius: 11px;
+      background: #41cc9a;
+      color: #062c23;
+      padding: 12px 14px;
+      font-size: .95rem;
+      font-weight: 800;
+    }
+
+    .secondary-cta {
+      background: #313f48;
+      color: #edf7fa;
+      padding: 11px 13px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-top: 14px;
+    }
+
+    /* Panel de prueba */
+    .test-panel {
+      margin-top: 14px;
+      padding: 22px;
+      border: 1px solid #38564f;
+      border-radius: 19px;
+      background: linear-gradient(145deg, #1b292c, #182127);
+    }
+
+    .test-panel h2 {
+      margin: 0 0 8px;
+      font-size: 1.2rem;
+    }
+
+    .test-panel .description {
+      margin-bottom: 16px;
+    }
+
+    .test-status {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 11px 12px;
+      margin: 0 0 14px;
+      border: 1px solid #38464c;
+      border-radius: 10px;
+      background: #141d22;
+      color: #a7b4bd;
+      font-size: .86rem;
+      overflow-wrap: anywhere;
+    }
+
+    .status-dot {
+      width: 9px;
+      height: 9px;
+      flex: 0 0 9px;
+      border-radius: 50%;
+      background: #82919a;
+    }
+
+    .test-status[data-state="ready"] .status-dot {
+      background: #41cc9a;
+    }
+
+    .test-status[data-state="running"] .status-dot {
+      background: #f0c36b;
+    }
+
+    .test-status[data-state="error"] .status-dot {
+      background: #ff7979;
+    }
+
+    .test-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    button {
+      width: 100%;
+      min-height: 46px;
+      padding: 12px;
+      border: 1px solid transparent;
+      border-radius: 11px;
+      font: inherit;
+      font-size: .9rem;
+      font-weight: 800;
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+
+    .start-button {
+      background: #41cc9a;
+      color: #062c23;
+    }
+
+    .stop-button {
+      background: #313f48;
+      color: #edf7fa;
+      border-color: #46565f;
+    }
+
+    button:disabled {
+      opacity: .42;
+      cursor: not-allowed;
+    }
+
+    .test-note {
+      color: #8fa1aa;
+      font-size: .78rem;
+      line-height: 1.5;
+      margin: 14px 0 0 !important;
+    }
+
+    footer {
+      color: #8a9aa4;
+      font-size: .78rem;
+      text-align: center;
+      line-height: 1.5;
+      margin-top: 24px;
+    }
+
+    @media (max-width: 470px) {
+      main { padding: 25px 14px; }
+      .grid { grid-template-columns: 1fr; }
+      .primary { padding: 20px; }
+      .test-panel { padding: 18px; }
+    }
   </style>
 </head>
+
 <body>
   <main>
     <header>
       <div class="logo" aria-hidden="true">🤖</div>
       <div class="eyebrow">Control remoto</div>
       <h1>OMNIBOT</h1>
-      <p class="subtitle">Selecciona qué parte del robot vas a controlar.</p>
+      <p class="subtitle">
+        Selecciona qué parte del robot vas a controlar.
+      </p>
     </header>
 
-    <a class="card primary" href="/?role=conductor" aria-label="Entrar como conductor">
+    <a class="card primary" href="/?role=conductor"
+       aria-label="Entrar como conductor">
       <span class="pill">ROL PRINCIPAL</span>
       <h2 class="card-title">🎮 Conductor</h2>
       <p>Control de ruedas, desplazamiento y giro con los dos joysticks.</p>
-      <span class="cta">Entrar como conductor <span aria-hidden="true">→</span></span>
+      <span class="cta">
+        Entrar como conductor
+        <span aria-hidden="true">→</span>
+      </span>
     </a>
 
     <div class="grid">
-      <a class="card" href="/?role=auxiliar" aria-label="Entrar al control de auxiliares">
+      <a class="card" href="/?role=auxiliar"
+         aria-label="Entrar al control de auxiliares">
         <h2 class="card-title">⚙️ Auxiliares</h2>
         <p>Control independiente de los motores auxiliares.</p>
-        <span class="cta secondary-cta">Seleccionar <span aria-hidden="true">→</span></span>
+        <span class="cta secondary-cta">
+          Seleccionar <span aria-hidden="true">→</span>
+        </span>
       </a>
-      <a class="card" href="/?role=servo" aria-label="Entrar al control del servo">
+
+      <a class="card" href="/?role=servo"
+         aria-label="Entrar al control del servo">
         <h2 class="card-title">🎚️ Servo</h2>
         <p>Ajuste de la posición del servomotor.</p>
-        <span class="cta secondary-cta">Seleccionar <span aria-hidden="true">→</span></span>
+        <span class="cta secondary-cta">
+          Seleccionar <span aria-hidden="true">→</span>
+        </span>
       </a>
     </div>
-    <footer>Conéctate a la red Wi-Fi del robot para usar los controles.</footer>
+
+    <section class="test-panel" aria-labelledby="testTitle">
+      <span class="pill">MANTENIMIENTO</span>
+      <h2 id="testTitle">🔧 Prueba de motores</h2>
+      <p class="description">
+        Ejecuta una secuencia individual de avance y retroceso
+        para los cuatro motores: FL, FR, RL y RR.
+      </p>
+
+      <div id="motorTestStatus" class="test-status" data-state="idle"
+           role="status" aria-live="polite">
+        <span class="status-dot" aria-hidden="true"></span>
+        <span id="motorTestStatusText">Conectando con el robot…</span>
+      </div>
+
+      <div class="test-actions">
+        <button id="startMotorTest" class="start-button" disabled>
+          Iniciar prueba
+        </button>
+        <button id="stopMotorTest" class="stop-button" disabled>
+          Detener prueba
+        </button>
+      </div>
+
+      <p class="test-note">
+        Antes de comenzar, levanta las ruedas del suelo y mantén
+        despejada la zona de movimiento. La prueba acciona los motores
+        automáticamente durante varios segundos.
+      </p>
+    </section>
+
+    <footer>
+      Conéctate a la red Wi-Fi del robot para usar los controles.
+    </footer>
   </main>
+
+  <script>
+    // Landing servido por el ESP32.
+    const WS_URL = `ws://${location.hostname}:82`;
+
+    const startButton = document.getElementById("startMotorTest");
+    const stopButton = document.getElementById("stopMotorTest");
+    const statusBox = document.getElementById("motorTestStatus");
+    const statusText = document.getElementById("motorTestStatusText");
+
+    let ws = null;
+    let roleGranted = false;
+    let testRunning = false;
+
+    function setTestStatus(text, state = "idle") {
+      statusText.textContent = text;
+      statusBox.dataset.state = state;
+    }
+
+    function updateButtons() {
+      const connected = ws && ws.readyState === WebSocket.OPEN;
+
+      startButton.disabled =
+        !connected || !roleGranted || testRunning;
+
+      stopButton.disabled =
+        !connected || !roleGranted || !testRunning;
+    }
+
+    function connectWebSocket() {
+      setTestStatus("Conectando con el robot…");
+
+      ws = new WebSocket(WS_URL);
+
+      ws.onopen = () => {
+        setTestStatus("Conectado · solicitando autorización…");
+        ws.send("ROLE,maintenance");
+      };
+
+      ws.onmessage = (event) => {
+        const message = String(event.data);
+
+        if (message === "ROLE_OK,maintenance") {
+          roleGranted = true;
+          setTestStatus("Conectado · listo para probar", "ready");
+          updateButtons();
+          return;
+        }
+
+        if (message === "ROLE_BUSY") {
+          roleGranted = false;
+          setTestStatus(
+            "El rol conductor está ocupado. Cierra el panel conductor e inténtalo de nuevo.",
+            "error"
+          );
+          updateButtons();
+          return;
+        }
+
+        if (message === "ROLE_DENIED" ||
+            message === "ROLE_REQUIRED") {
+          roleGranted = false;
+          setTestStatus("El ESP32 no autorizó el rol conductor.", "error");
+          updateButtons();
+          return;
+        }
+
+        if (message === "TEST_STARTED") {
+          testRunning = true;
+          setTestStatus("Prueba iniciada · motores en secuencia", "running");
+          updateButtons();
+          return;
+        }
+
+        if (message === "TEST_BUSY") {
+          testRunning = true;
+          setTestStatus("Ya hay una prueba de motores en ejecución.", "running");
+          updateButtons();
+          return;
+        }
+
+        if (message === "TEST_STOPPED") {
+          testRunning = false;
+          setTestStatus("Prueba detenida", "ready");
+          updateButtons();
+          return;
+        }
+
+        if (message === "TEST_DENIED") {
+          setTestStatus("El ESP32 rechazó la solicitud de prueba.", "error");
+          return;
+        }
+
+        if (message === "TEST_DONE") {
+          testRunning = false;
+          setTestStatus("Prueba finalizada", "ready");
+          updateButtons();
+        }
+      };
+
+      ws.onerror = () => {
+        setTestStatus("Error de conexión WebSocket.", "error");
+      };
+
+      ws.onclose = () => {
+        roleGranted = false;
+        testRunning = false;
+        updateButtons();
+        setTestStatus(
+          "Conexión cerrada. Recarga la página para reconectar.",
+          "error"
+        );
+      };
+    }
+
+    startButton.addEventListener("click", () => {
+      if (!ws || ws.readyState !== WebSocket.OPEN || !roleGranted) {
+        setTestStatus("No hay autorización para iniciar la prueba.", "error");
+        return;
+      }
+
+      if (testRunning) return;
+
+      // Evitar dobles clics mientras llega la confirmación del ESP32.
+      startButton.disabled = true;
+      setTestStatus("Solicitando inicio de la prueba…");
+
+      ws.send("TEST_MOTORS");
+    });
+
+    stopButton.addEventListener("click", () => {
+      if (!ws || ws.readyState !== WebSocket.OPEN || !roleGranted) {
+        setTestStatus("Sin conexión para solicitar la detención.", "error");
+        return;
+      }
+
+      stopButton.disabled = true;
+      setTestStatus("Solicitando detención…", "running");
+      ws.send("STOP_MOTOR_TEST");
+    });
+
+    connectWebSocket();
+  </script>
 </body>
 </html>
+```
