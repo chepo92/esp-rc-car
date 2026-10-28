@@ -135,22 +135,33 @@ void setMotorTA6586(
 )
 {
     value = constrain(value, -255, 255);
-
+    int pwmA, pwmB;
+    
     if(value > 0)
     {
-        analogWrite(pinA, value);
-        analogWrite(pinB, 0);
+        pwmA = value; 
+        pwmB = 0 ;
+
     }
     else if(value < 0)
     {
-        analogWrite(pinA, 0);
-        analogWrite(pinB, -value);
+        pwmA = 0 ; 
+        pwmB = -value ;
     }
     else
     {
-        analogWrite(pinA, 0);
-        analogWrite(pinB, 0);
+        pwmA = 0 ; 
+        pwmB = 0 ;
     }
+    analogWrite(pinA, pwmA);
+    analogWrite(pinB, pwmB);
+
+    Serial.printf(
+        "[%d@%d %d@%d]",
+        pinA, pwmA, pinB, pwmB
+    );
+
+
 }
 
 void setFL(int v)
@@ -202,22 +213,29 @@ void driveMecanum(int forward, int strafe, int rotate)
     motorRL = map(motorRL, -100, 100, -255, 255);
     motorRR = map(motorRR, -100, 100, -255, 255);
 
-    setFL(motorFL);
-    setFR(motorFR);
-    setRL(motorRL);
-    setRR(motorRR);
-
     Serial.printf(
-        "FL[pwm=%d dir=%d]=%4d  "
-        "FR[pwm=%d dir=%d]=%4d  "
-        "RL[pwm=%d dir=%d]=%4d  "
-        "RR[pwm=%d dir=%d]=%4d\n",
+        "FL=%4d ",
+        motorFL
+    ); 
+    setFL(motorFL);
+    Serial.printf(
+        " FR=%4d ",
+        motorFR
+    ); 
+    setFR(motorFR);
+        Serial.printf(
+        " RL=%4d ",
+        motorRL
+    ); 
+    setRL(motorRL);
+        Serial.printf(
+        " RR=%4d ",
+        motorRR
+    ); 
+    setRR(motorRR);
+    Serial.print("\n" ); 
+   
 
-        pwm_FL, dir_FL, motorFL,
-        pwm_FR, dir_FR, motorFR,
-        pwm_RL, dir_RL, motorRL,
-        pwm_RR, dir_RR, motorRR
-    );
 }
 
 void setMotor1(int speed);
@@ -721,8 +739,8 @@ void setup()
     request->send(LittleFS, "/landing.html", "text/html");
 });
 
-// Servir los demas archivos
-webserver.serveStatic("/", LittleFS, "/");
+    // Servir los demas archivos
+    webserver.serveStatic("/", LittleFS, "/");
 
     // start server
     webserver.begin();
@@ -752,7 +770,7 @@ void loop()
 
     acceptWebSocketClients();
     serviceWebSocketClients();
-    checkCommandTimeouts();
+    checkClientTimeouts();
 
     yield();
 }
